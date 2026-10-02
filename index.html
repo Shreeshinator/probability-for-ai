@@ -635,7 +635,7 @@
               <input type="range" id="bayesSens" min="0.01" max="1" step="0.01" value="0.99" />
             </label>
             <label class="slider">
-              <span>False positive rate P(B|¬A): <output id="bayesFpOut">0.010</output></span>
+              <span>False positive rate P(B|A): <output id="bayesFpOut">0.010</output></span>
               <input type="range" id="bayesFp" min="0" max="0.2" step="0.001" value="0.01" />
             </label>
             <canvas id="bayesCanvas" width="640" height="240"></canvas>
@@ -662,7 +662,7 @@
         </p>
         <div class="formula">
           <div class="formula-title">Law of total probability</div>
-          <div class="formula-expr">P(B) = P(B | A) · P(A) + P(B | ¬A) · P(¬A)</div>
+          <div class="formula-expr">P(B) = P(B | A) · P(A) + P(B | A) · P(A)</div>
           <p class="formula-foot">Either A holds (weighted by the prior) or it doesn't — there is no third option.</p>
         </div>
       </div>
