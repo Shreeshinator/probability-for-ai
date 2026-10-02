@@ -407,7 +407,7 @@ input[type="range"]::-moz-range-thumb {
   display: inline-block; margin-top: 1rem; font-size: .82rem; font-weight: 650;
   background: rgba(234, 179, 8, .10); color: var(--brand); padding: .32rem .78rem; border-radius: 999px;
 }
-.dist-cards { margin-top: 3rem; }
+.dist-cards { margin-top: 3rem; grid-template-columns: 1fr; }
 .dist-card { padding: 1.75rem 1.6rem 1.85rem; }
 .dist-card .dist-story { font-size: .885rem; color: var(--muted); min-height: 3.1em; }
 .dist-card .dist-use { font-size: .845rem; margin-top: 1rem; color: var(--ink-soft); }
