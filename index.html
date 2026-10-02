@@ -25,6 +25,7 @@
     <nav class="topnav" id="topnav" aria-label="Lesson sections">
       <a href="#foundations">Foundations</a>
       <a href="#distributions">Distributions</a>
+      <a href="#bayes">Bayes</a>
       <a href="#clt">CLT</a>
       <a href="#softmax">Softmax</a>
       <a href="#code">Code</a>
@@ -566,8 +567,260 @@
   </div>
 </section>
 
+<!-- ============================== BAYES ============================== -->
+<section class="section lesson" id="bayes" data-lesson="7">
+  <div class="container">
+    <header class="lesson-head">
+      <h2>From joint probability to Bayes</h2>
+      <p class="lesson-intro">
+        Conditional probability tells you how to revise beliefs when evidence arrives.
+        Bayes' theorem is that idea rearranged around a prior — and it powers spam filters,
+        medical testing, and regularization itself.
+      </p>
+    </header>
+
+    <div class="two-col">
+      <div class="col-text">
+        <h3>One equation, four quantities</h3>
+        <p>
+          Conditional probability runs in both directions over the same joint probability:
+        </p>
+        <div class="formula">
+          <div class="formula-expr">
+            P(A | B) =
+            <span class="frac"><span class="num">P(A and B)</span><span class="den">P(B)</span></span>
+            &nbsp;&nbsp;and&nbsp;&nbsp;
+            P(B | A) =
+            <span class="frac"><span class="num">P(A and B)</span><span class="den">P(A)</span></span>
+          </div>
+          <p class="formula-foot">Both expressions share the same numerator: <span class="math">P(A and B)</span>.</p>
+        </div>
+        <p>
+          Solve both for <span class="math">P(A and B)</span>, set them equal, and rearrange:
+        </p>
+        <div class="formula">
+          <div class="formula-expr small">P(A and B) = P(A | B) · P(B) = P(B | A) · P(A)</div>
+        </div>
+        <div class="formula big">
+          <div class="formula-title">Bayes' theorem</div>
+          <div class="formula-expr">
+            P(A | B) =
+            <span class="frac"><span class="num">P(B | A) · P(A)</span><span class="den">P(B)</span></span>
+          </div>
+          <ul class="symbols">
+            <li><span class="math">P(A | B)</span> — posterior: your updated belief about A after seeing B</li>
+            <li><span class="math">P(B | A)</span> — likelihood: how probable the evidence is if A is true</li>
+            <li><span class="math">P(A)</span> — prior: your belief about A before any evidence</li>
+            <li><span class="math">P(B)</span> — evidence: the total probability of observing B at all</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-viz">
+        <div class="viz-card" id="widget-bayes">
+          <div class="viz-head">
+            <h4>Interactive: the base rate rules everything</h4>
+            <p class="viz-sub">Same test, different prior — move from a rare disease to common spam and watch one test tell two opposite stories.</p>
+          </div>
+          <div class="viz-body">
+            <div class="btn-row">
+              <button class="btn btn-small" id="bayesPresetMed">Medical test</button>
+              <button class="btn btn-small" id="bayesPresetSpam">Spam filter</button>
+            </div>
+            <label class="slider">
+              <span>Prior P(A): <output id="bayesPriorOut">0.010%</output></span>
+              <input type="range" id="bayesPrior" min="-4" max="0" step="0.25" value="-4" />
+            </label>
+            <label class="slider">
+              <span>Sensitivity P(B|A): <output id="bayesSensOut">0.99</output></span>
+              <input type="range" id="bayesSens" min="0.01" max="1" step="0.01" value="0.99" />
+            </label>
+            <label class="slider">
+              <span>False positive rate P(B|¬A): <output id="bayesFpOut">0.010</output></span>
+              <input type="range" id="bayesFp" min="0" max="0.2" step="0.001" value="0.01" />
+            </label>
+            <canvas id="bayesCanvas" width="640" height="240"></canvas>
+            <div class="viz-legend">
+              <span><i class="sw sw-amber"></i>true positive</span>
+              <span><i class="sw sw-teal"></i>false positive</span>
+              <span><i class="sw sw-red"></i>missed (false negative)</span>
+              <span><i class="sw sw-slate"></i>true negative</span>
+            </div>
+            <div class="readout" id="bayesReadout"></div>
+          </div>
+          <p class="viz-caption">Top bar: everyone tested — with a rare condition the sick slice is nearly invisible, and that <em>is</em> the lesson. Bottom bar: only the positives, where the posterior is the amber slice.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="col-text">
+        <h3>The evidence term, expanded</h3>
+        <p>
+          The evidence <span class="math">P(B)</span> acts as a normalizer — it rescales everything so the
+          posterior is a valid probability. Expand it with the law of total probability, summing over
+          every way B can happen:
+        </p>
+        <div class="formula">
+          <div class="formula-title">Law of total probability</div>
+          <div class="formula-expr">P(B) = P(B | A) · P(A) + P(B | ¬A) · P(¬A)</div>
+          <p class="formula-foot">Either A holds (weighted by the prior) or it doesn't — there is no third option.</p>
+        </div>
+      </div>
+      <div class="col-viz">
+        <aside class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div>
+            <strong>Read Bayes right to left.</strong> Start with what you believed (prior), weight how well
+            each possibility explains what you saw (likelihood), then renormalize (evidence). The posterior
+            is your prior belief, updated by evidence.
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <h3>Two worked examples, side by side</h3>
+    <p>
+      The same arithmetic produces opposite conclusions depending on the prior.
+      Work through both — then reproduce them with the preset buttons above.
+    </p>
+    <div class="compare">
+      <div class="compare-col">
+        <div class="compare-tag discrete">Rare · 1 in 10,000</div>
+        <h3>The medical test</h3>
+        <p>A disease affects 1 in 10,000 people. The test catches 99% of sick people, but gives false positives 1% of the time.</p>
+        <pre class="calc">P(sick)             = 0.0001   <span class="dim">(prior: disease is rare)</span>
+P(positive|sick)    = 0.99     <span class="dim">(likelihood: test catches it)</span>
+P(positive|healthy) = 0.01     <span class="dim">(false positive rate)</span>
+
+P(positive) = 0.99 × 0.0001 + 0.01 × 0.9999
+            = 0.000099 + 0.009999
+            = <span class="hl">0.010098</span>
+
+P(sick|positive) = 0.99 × 0.0001 / 0.010098
+                 = <span class="hl">0.0098 = 0.98%</span></pre>
+        <p><strong>Less than 1%.</strong> The prior dominates: when a condition is rare, even an accurate test produces mostly false positives. This is why doctors order confirmation tests.</p>
+      </div>
+      <div class="compare-col">
+        <div class="compare-tag continuous">Common · 30% base rate</div>
+        <h3>The spam filter</h3>
+        <p>You receive an email containing the word "lottery". 30% of all email is spam — a much stronger prior. Is it spam?</p>
+        <pre class="calc">P(spam)               = 0.3      <span class="dim">(30% of email is spam)</span>
+P("lottery"|spam)     = 0.05     <span class="dim">(5% of spam contains it)</span>
+P("lottery"|not spam) = 0.001    <span class="dim">(0.1% of legit mail has it)</span>
+
+P("lottery") = 0.05 × 0.3 + 0.001 × 0.7
+             = 0.015 + 0.0007
+             = <span class="hl">0.0157</span>
+
+P(spam|"lottery") = 0.05 × 0.3 / 0.0157
+                  = <span class="hl">0.955 = 95.5%</span></pre>
+        <p><strong>One word shifts 30% to 95.5%.</strong> A real spam filter applies Bayes across hundreds of words simultaneously.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="col-text">
+        <h3>Naive Bayes: the independence assumption</h3>
+        <p>
+          Naive Bayes extends this to many features by assuming all features are
+          <strong>conditionally independent</strong> given the class:
+        </p>
+        <div class="formula">
+          <div class="formula-expr small">P(class | f₁, f₂, …, f<sub>n</sub>) = <span class="frac"><span class="num">P(class) · Π P(f<sub>i</sub> | class)</span><span class="den">P(f₁, f₂, …, f<sub>n</sub>)</span></span></div>
+        </div>
+        <p>
+          The "naive" part is the independence assumption — in text, word occurrences are not independent
+          ("New" and "York" are correlated). It still works surprisingly well, because the classifier only
+          needs to <em>rank</em> classes, not produce calibrated probabilities.
+        </p>
+        <p>
+          Since the denominator is identical for every class, skip it and compare numerators:
+        </p>
+        <div class="formula">
+          <div class="formula-expr small">score(class) = P(class) · Π P(f<sub>i</sub> | class) &nbsp;→&nbsp; pick the max</div>
+        </div>
+      </div>
+      <div class="col-text">
+        <h3>Where do the probabilities come from? MLE</h3>
+        <p>
+          Maximum likelihood estimation says: choose the parameters that make the observed data most
+          likely. For discrete counts, that reduces to relative frequency — just count:
+        </p>
+        <div class="formula">
+          <div class="formula-expr small">P("free" | spam) = <span class="frac"><span class="num">spam emails containing "free"</span><span class="den">total spam emails</span></span></div>
+        </div>
+        <aside class="callout warn">
+          <div class="callout-icon">⚠️</div>
+          <div>
+            <strong>The zero problem.</strong> If a word never appears in spam during training, MLE gives it
+            probability zero — and one unseen word kills the entire product. Fix it with
+            <strong>Laplace smoothing</strong>:
+            <div class="formula compact" style="margin-bottom:0">
+              <div class="formula-expr small">P(word | class) = <span class="frac"><span class="num">count(word, class) + 1</span><span class="den">total words in class + vocabulary size</span></span></div>
+            </div>
+            Adding 1 to every count ensures no probability is ever zero.
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <h3>MAP: MLE plus a prior</h3>
+    <p>
+      MLE asks: what parameters maximize <span class="math">P(data | params)</span>?
+      MAP asks: what parameters maximize <span class="math">P(params | data)</span>? By Bayes' theorem:
+    </p>
+    <div class="formula big">
+      <div class="formula-expr">P(params | data) ∝ P(data | params) · P(params)</div>
+      <ul class="symbols">
+        <li>MAP adds a <strong>prior over the parameters themselves</strong> — e.g. a belief that weights should be small</li>
+        <li>A Gaussian prior on weights <strong>is</strong> L2 regularization; a Laplace prior <strong>is</strong> L1</li>
+        <li>The "ridge" penalty in ridge regression is literally a Gaussian prior on the weights</li>
+      </ul>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Estimation</th><th>Optimizes</th><th>ML equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>MLE</td><td><span class="math">P(data | params)</span></td><td>Unregularized training</td></tr>
+          <tr><td>MAP</td><td><span class="math">P(data | params) · P(params)</span></td><td>L2 / L1 regularization</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Bayesian vs frequentist: the practical difference</h3>
+    <p>
+      Frequentists treat parameters as fixed unknowns and ask "if I repeated this experiment many times,
+      what would happen?" For building ML systems, the practical differences are:
+    </p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Aspect</th><th>Frequentist</th><th>Bayesian</th></tr></thead>
+        <tbody>
+          <tr><td>Output</td><td>Point estimate</td><td>Distribution over values</td></tr>
+          <tr><td>Uncertainty</td><td>Confidence intervals (about the procedure)</td><td>Credible intervals (about the parameter)</td></tr>
+          <tr><td>Small data</td><td>Can overfit</td><td>Prior acts as regularization</td></tr>
+          <tr><td>Computation</td><td>Usually faster</td><td>Often requires sampling (MCMC)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Most production ML is frequentist (SGD, point estimates). Bayesian methods shine when you need
+      calibrated uncertainty — medical decisions, safety-critical systems — or when data is scarce,
+      like few-shot learning and cold start.
+    </p>
+
+    <h3>Why Bayesian thinking matters for ML</h3>
+    <ul class="def-list">
+      <li><strong>Priors are regularization.</strong> Every regularization term is a Bayesian statement about what parameter values you expect.</li>
+      <li><strong>Posteriors are uncertainty.</strong> A single predicted probability says nothing about confidence in that estimate; a posterior gives a range: "P(spam) is between 0.8 and 0.95."</li>
+      <li><strong>Bayes updates are online learning.</strong> Today's posterior becomes tomorrow's prior — new data updates beliefs incrementally instead of retraining from scratch.</li>
+      <li><strong>Model comparison is Bayesian.</strong> BIC, marginal likelihood, and Bayes factors all use Bayesian reasoning to choose between models without overfitting.</li>
+    </ul>
+  </div>
+</section>
+
 <!-- ============================== LESSON 7 ============================== -->
-<section class="section lesson" id="clt" data-lesson="7">
+<section class="section lesson alt" id="clt" data-lesson="8">
   <div class="container">
     <header class="lesson-head">
       <h2>Why the bell curve shows up everywhere</h2>
@@ -627,7 +880,7 @@
 </section>
 
 <!-- ============================== LESSON 8 ============================== -->
-<section class="section lesson alt" id="logprob" data-lesson="8">
+<section class="section lesson" id="logprob" data-lesson="9">
   <div class="container">
     <header class="lesson-head">
       <h2>Log probabilities — why we never multiply raw probabilities</h2>
@@ -681,7 +934,7 @@
 </section>
 
 <!-- ============================== LESSON 9 ============================== -->
-<section class="section lesson" id="softmax" data-lesson="9">
+<section class="section lesson alt" id="softmax" data-lesson="10">
   <div class="container">
     <header class="lesson-head">
       <h2>Softmax, log-softmax &amp; cross-entropy</h2>
@@ -795,7 +1048,7 @@
 </section>
 
 <!-- ============================== LESSON 10 ============================== -->
-<section class="section lesson alt" id="sampling" data-lesson="10">
+<section class="section lesson" id="sampling" data-lesson="11">
   <div class="container">
     <header class="lesson-head">
       <h2>Sampling — turning distributions into output</h2>
@@ -848,7 +1101,7 @@
 </section>
 
 <!-- ============================== CODE ============================== -->
-<section class="section section-dark" id="code" data-lesson="11">
+<section class="section section-dark" id="code" data-lesson="12">
   <div class="container">
     <header class="lesson-head">
       <h2>Everything above, in Python</h2>
@@ -1037,7 +1290,7 @@ print(f"Log-softmax: {log_probs}")</code></pre>
 </section>
 
 <!-- ============================== EXERCISES ============================== -->
-<section class="section lesson" id="exercises" data-lesson="12">
+<section class="section lesson alt" id="exercises" data-lesson="13">
   <div class="container">
     <header class="lesson-head">
       <h2>Exercises</h2>
@@ -1120,7 +1373,7 @@ print(f"Log-softmax: {log_probs}")</code></pre>
 </section>
 
 <!-- ============================== GLOSSARY ============================== -->
-<section class="section lesson alt" id="glossary" data-lesson="13">
+<section class="section lesson" id="glossary" data-lesson="14">
   <div class="container">
     <header class="lesson-head">
       <h2>Key terms, decoded</h2>
@@ -1150,6 +1403,12 @@ print(f"Log-softmax: {log_probs}")</code></pre>
       <article class="term"><h3>Cross-entropy</h3><p class="said">"The loss function"</p><p class="means"><span class="math">−Σ p<sub>true</sub> log p<sub>pred</sub></span>. Measures how different two distributions are. Lower is better.</p></article>
       <article class="term"><h3>Logits</h3><p class="said">"Raw model outputs"</p><p class="means">Unnormalized scores before softmax. Named after the logistic function.</p></article>
       <article class="term"><h3>Sampling</h3><p class="said">"Drawing random values"</p><p class="means">Generating values according to a probability distribution. How models generate output.</p></article>
+      <article class="term"><h3>Posterior</h3><p class="said">"Your updated belief"</p><p class="means"><span class="math">P(A | B)</span> — belief about a hypothesis after seeing evidence. Computed via Bayes' theorem.</p></article>
+      <article class="term"><h3>Likelihood</h3><p class="said">"How well the evidence fits"</p><p class="means"><span class="math">P(B | A)</span> — probability of observing the evidence if the hypothesis is true.</p></article>
+      <article class="term"><h3>Prior</h3><p class="said">"What you believed before"</p><p class="means"><span class="math">P(A)</span> — belief about a hypothesis before seeing evidence. Acts as regularization.</p></article>
+      <article class="term"><h3>Naive Bayes</h3><p class="said">"The simple classifier"</p><p class="means">Applies Bayes across many features assumed conditionally independent. Fast, strong baseline for text.</p></article>
+      <article class="term"><h3>MLE</h3><p class="said">"Just count"</p><p class="means">Maximum likelihood estimation — chooses parameters maximizing <span class="math">P(data | params)</span>. For counts, reduces to relative frequency.</p></article>
+      <article class="term"><h3>MAP</h3><p class="said">"MLE plus a prior"</p><p class="means">Maximum a posteriori — maximizes <span class="math">P(data | params) · P(params)</span>. Equivalent to L2 / L1 regularization.</p></article>
     </div>
     <p class="glossary-empty" id="glossaryEmpty" hidden>No terms match that search.</p>
   </div>

@@ -429,6 +429,41 @@ input[type="range"]::-moz-range-thumb {
 .joint-table td.marginal.hl { background: rgba(45, 212, 191, .22); }
 .joint-table .corner { background: var(--surface); }
 
+/* ---------- worked calculations ---------- */
+.calc {
+  font-family: var(--font-mono); font-size: .86rem; line-height: 1.8;
+  background: rgba(0, 0, 0, .3); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 1.2rem 1.35rem; margin: 1.25rem 0;
+  overflow-x: auto; color: var(--ink-soft); white-space: pre;
+}
+.calc .hl { color: var(--brand); font-weight: 700; }
+.calc .dim { color: var(--muted); }
+
+/* ---------- data tables ---------- */
+.table-scroll { overflow-x: auto; margin: 1.5rem 0 2rem; }
+.data-table {
+  border-collapse: collapse; width: 100%; font-size: .92rem; min-width: 560px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.data-table th, .data-table td {
+  border: 1px solid var(--line); padding: .8rem .95rem; text-align: left; vertical-align: top;
+}
+.data-table th {
+  background: var(--surface-2); color: var(--brand); font-size: .76rem; font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+}
+.data-table td { color: var(--ink-soft); }
+.data-table td:first-child { font-family: var(--font-mono); color: var(--ink); white-space: nowrap; }
+
+/* ---------- canvas legend ---------- */
+.viz-legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; font-size: .82rem; color: var(--muted); }
+.viz-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: .35rem; vertical-align: -1px; }
+.viz-legend .sw-amber { background: #eab308; }
+.viz-legend .sw-teal { background: #2dd4bf; }
+.viz-legend .sw-red { background: #f87171; }
+.viz-legend .sw-slate { background: rgba(226, 232, 240, .25); }
+
 /* ---------- CLT ---------- */
 .clt-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 2.5rem; align-items: start; }
 .clt-side { display: grid; gap: 1.5rem; }

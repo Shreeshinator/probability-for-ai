@@ -1492,6 +1492,112 @@
     render();
   }
 
+  /* ===================================================== bayes explorer */
+  function bayesWidget() {
+    const canvas = document.getElementById("bayesCanvas");
+    const priorIn = document.getElementById("bayesPrior");
+    const sensIn = document.getElementById("bayesSens");
+    const fpIn = document.getElementById("bayesFp");
+    const priorOut = document.getElementById("bayesPriorOut");
+    const sensOut = document.getElementById("bayesSensOut");
+    const fpOut = document.getElementById("bayesFpOut");
+    const readout = document.getElementById("bayesReadout");
+    if (!canvas || !priorIn || !sensIn || !fpIn) return;
+
+    const N = 100000;
+
+    function fmtPct(p) {
+      const v = p * 100;
+      if (v >= 10) return v.toFixed(1) + "%";
+      if (v >= 1) return v.toFixed(2) + "%";
+      return v.toFixed(3) + "%";
+    }
+
+    function vals() {
+      const prior = Math.pow(10, parseFloat(priorIn.value));
+      const sens = parseFloat(sensIn.value);
+      const fp = parseFloat(fpIn.value);
+      const evidence = sens * prior + fp * (1 - prior);
+      const posterior = evidence > 0 ? (sens * prior) / evidence : 0;
+      return { prior, sens, fp, evidence, posterior };
+    }
+
+    function draw() {
+      const v = vals();
+      priorOut.textContent = fmtPct(v.prior);
+      sensOut.textContent = v.sens.toFixed(2);
+      fpOut.textContent = v.fp.toFixed(3);
+
+      const tp = v.sens * v.prior;
+      const fn = (1 - v.sens) * v.prior;
+      const fp = v.fp * (1 - v.prior);
+      const tn = Math.max(0, (1 - v.fp) * (1 - v.prior));
+
+      const { ctx, w, h } = setup(canvas);
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = C.paper;
+      ctx.fillRect(0, 0, w, h);
+
+      const barX = Math.min(132, w * 0.30);
+      const barW = Math.max(60, w - barX - 20);
+      const bh = Math.max(24, h * 0.17);
+      const y1 = h * 0.30 - bh / 2;
+      const y2 = h * 0.74 - bh / 2;
+
+      function segs(x, y, parts, total) {
+        let cx = x;
+        parts.forEach((s) => {
+          const sw = total > 0 ? (s.f / total) * barW : 0;
+          const dw = Math.min(s.f > 0 ? Math.max(sw, 2.5) : 0, x + barW - cx);
+          if (dw > 0) {
+            ctx.fillStyle = s.c;
+            ctx.fillRect(cx, y, dw, bh);
+            cx += dw;
+          }
+        });
+        ctx.strokeStyle = C.line;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x, y, barW, bh);
+      }
+
+      ctx.font = "600 11px system-ui, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = C.soft;
+      ctx.fillText("All tested", 10, y1 + bh / 2);
+      segs(barX, y1, [
+        { f: tp, c: C.brand },
+        { f: fn, c: "#f87171" },
+        { f: fp, c: C.teal },
+        { f: tn, c: "rgba(226, 232, 240, 0.14)" }
+      ], 1);
+      ctx.fillText("Positives only", 10, y2 + bh / 2);
+      segs(barX, y2, [
+        { f: v.posterior, c: C.brand },
+        { f: 1 - v.posterior, c: C.teal }
+      ], 1);
+
+      const tpN = Math.round(tp * N).toLocaleString();
+      const fpN = Math.round(fp * N).toLocaleString();
+      readout.innerHTML =
+        "P(B) = sens·prior + fp·(1−prior) = <strong>" + v.evidence.toPrecision(4) + "</strong><br>" +
+        "P(A|B) = sens·prior / P(B) = <strong>" + fmtPct(v.posterior) + "</strong><br>" +
+        "In " + N.toLocaleString() + " people: " + tpN + " true positives vs " + fpN +
+        " false positives" + ((1 - v.posterior) > 0.5
+          ? " — <span class='bad'>most alarms are false</span>"
+          : " — <span class='ok'>most alarms are real</span>");
+    }
+
+    [priorIn, sensIn, fpIn].forEach((el) => el.addEventListener("input", draw));
+    document.getElementById("bayesPresetMed").addEventListener("click", () => {
+      priorIn.value = "-4"; sensIn.value = "0.99"; fpIn.value = "0.01"; draw();
+    });
+    document.getElementById("bayesPresetSpam").addEventListener("click", () => {
+      priorIn.value = "-0.5"; sensIn.value = "0.05"; fpIn.value = "0.001"; draw();
+    });
+    register(draw);
+  }
+
   /* ============================================================ init all */
   function init() {
     heroBackground();
@@ -1502,6 +1608,7 @@
     distExplorer();
     expectedValueWidget();
     jointTableWidget();
+    bayesWidget();
     cltWidget();
     underflowWidget();
     softmaxWidget();
